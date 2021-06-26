@@ -7,7 +7,7 @@ import org.elasticsearch.test.ESIntegTestCase;
 public class StorageOptimizerPluginTest extends ESIntegTestCase {
 
     public void testStorageEndpoint() throws Exception {
-        Request request = new Request("GET", StorageConfigRestAction.OPEN_DISTRO_STORAGE_OPTIMIZER);
+        Request request = new Request("GET", StorageConfigRestAction.STORAGE_OPTIMIZER);
         //Response response = client().performRequest(request);
         //System.out.println(response);
     }
