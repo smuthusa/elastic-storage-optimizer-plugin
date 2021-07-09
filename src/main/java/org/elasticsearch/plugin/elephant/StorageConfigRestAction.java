@@ -35,9 +35,7 @@ public class StorageConfigRestAction extends BaseRestHandler {
         if (restRequest.method() == RestRequest.Method.GET) {
             return (RestChannelConsumer) AccessController.doPrivileged((PrivilegedAction<Object>) this::getStorageOptimizedIndices);
         } else if (restRequest.method() == RestRequest.Method.POST) {
-            return (RestChannelConsumer) AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                return handleIndexOptimizationRequest(restRequest);
-            });
+            return (RestChannelConsumer) AccessController.doPrivileged((PrivilegedAction<Object>) () -> handleIndexOptimizationRequest(restRequest));
         } else {
             throw new RuntimeException("Not found!");
         }

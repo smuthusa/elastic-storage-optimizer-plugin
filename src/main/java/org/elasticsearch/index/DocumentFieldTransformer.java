@@ -4,6 +4,8 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.uid.cache.ObjectUIDCache;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class DocumentFieldTransformer {
@@ -21,6 +23,14 @@ public class DocumentFieldTransformer {
             Collection<String> fieldsToTransform = indicesProvider.fieldsToOptimize(indexReq.index());
             fieldsToTransform.forEach(field -> transformField(field, indexReq, data));
         }
+    }
+
+    public Collection<String> interceptSearch(String index) {
+        boolean intercept = indicesProvider.canOptimize(index);
+        if (intercept) {
+            return indicesProvider.fieldsToOptimize(index);
+        }
+        return Collections.emptyList();
     }
 
     private void transformField(String field, IndexRequest indexReq, Map<String, Object> data) {

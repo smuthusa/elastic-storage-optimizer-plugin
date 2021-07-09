@@ -6,6 +6,6 @@ public class InMemoryObjectUIDCache implements ObjectUIDCache {
 
     @Override
     public Object transform(String field, Object value) {
-        return Arrays.asList(10001, 20002, 30003);
+        return "10001";//Arrays.asList(10001, 20002, 30003);
     }
 }
