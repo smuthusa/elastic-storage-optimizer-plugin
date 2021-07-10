@@ -1,6 +1,10 @@
 package org.elasticsearch.uid.cache;
 
-public interface ObjectUIDCache {
+import java.util.Optional;
 
-    Object transform(String field, Object value);
+public interface ObjectUIDCache<T> {
+
+    Integer transform(String field, String value);
+
+    Optional<T> transform(String value);
 }

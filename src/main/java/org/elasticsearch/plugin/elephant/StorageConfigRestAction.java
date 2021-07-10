@@ -31,13 +31,13 @@ public class StorageConfigRestAction extends BaseRestHandler {
 
     @Override
     protected RestChannelConsumer prepareRequest(RestRequest restRequest, NodeClient client) {
-        logger.info(String.format("Handling request .....%s <<-->>> %s >>> %s", restRequest.uri(), restRequest.method(), restRequest.getHttpRequest()));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Handling request %s <<-->>> %s >>> %s", restRequest.uri(), restRequest.method(), restRequest.getHttpRequest()));
+        }
         if (restRequest.method() == RestRequest.Method.GET) {
             return (RestChannelConsumer) AccessController.doPrivileged((PrivilegedAction<Object>) this::getStorageOptimizedIndices);
-        } else if (restRequest.method() == RestRequest.Method.POST) {
-            return (RestChannelConsumer) AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                return handleIndexOptimizationRequest(restRequest);
-            });
+        } else if (restRequest.method() == RestRequest.Method.PUT) {
+            return (RestChannelConsumer) AccessController.doPrivileged((PrivilegedAction<Object>) () -> handleIndexOptimizationRequest(restRequest));
         } else {
             throw new RuntimeException("Not found!");
         }
@@ -53,7 +53,7 @@ public class StorageConfigRestAction extends BaseRestHandler {
         logger.info(String.format("Registering routes for '%s'", STORAGE_OPTIMIZER));
         return Arrays.asList(
                 new Route(RestRequest.Method.GET, STORAGE_OPTIMIZER),
-                new Route(RestRequest.Method.POST, STORAGE_OPTIMIZER)
+                new Route(RestRequest.Method.PUT, STORAGE_OPTIMIZER)
         );
     }
 

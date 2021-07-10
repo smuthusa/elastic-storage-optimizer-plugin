@@ -2,20 +2,21 @@ package org.elasticsearch.plugin.elephant;
 
 import org.elasticsearch.action.support.ActionFilter;
 import org.elasticsearch.cluster.metadata.IndexNameExpressionResolver;
-import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.cluster.node.DiscoveryNodes;
 import org.elasticsearch.common.settings.ClusterSettings;
 import org.elasticsearch.common.settings.IndexScopedSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.SettingsFilter;
 import org.elasticsearch.elephant.filter.StorageOptimizeFilter;
+import org.elasticsearch.elephant.query.interceptor.SearchQueryInterceptor;
 import org.elasticsearch.index.DocumentFieldTransformer;
 import org.elasticsearch.index.IndicesProvider;
 import org.elasticsearch.plugins.ActionPlugin;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestHandler;
-import org.elasticsearch.uid.cache.InMemoryObjectUIDCache;
+import org.elasticsearch.uid.cache.InMemoryAutoIncrementValueCache;
+import org.elasticsearch.uid.cache.ObjectValueToIntegerMapper;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +29,7 @@ public class StorageOptimizerPlugin extends Plugin implements ActionPlugin {
 
     public StorageOptimizerPlugin() {
         provider = new IndicesProvider();
-        InMemoryObjectUIDCache objectUIDCache = new InMemoryObjectUIDCache();
+        ObjectValueToIntegerMapper objectUIDCache = new InMemoryAutoIncrementValueCache();
         transformer = new DocumentFieldTransformer(provider, objectUIDCache);
     }
 
@@ -40,7 +41,8 @@ public class StorageOptimizerPlugin extends Plugin implements ActionPlugin {
 
     @Override
     public List<ActionFilter> getActionFilters() {
-        ActionFilter filter = new StorageOptimizeFilter(transformer);
+        SearchQueryInterceptor searchQueryInterceptor = new SearchQueryInterceptor(transformer);
+        ActionFilter filter = new StorageOptimizeFilter(transformer, searchQueryInterceptor);
         return Collections.singletonList(filter);
     }
 }

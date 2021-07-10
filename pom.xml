@@ -15,8 +15,16 @@
         <maven.compiler.target>11</maven.compiler.target>
         <elasticsearch.version>7.9.1</elasticsearch.version>
         <maven.compiler.plugin.version>3.5.1</maven.compiler.plugin.version>
+        <es.http.port>9201</es.http.port>
+        <es.bind.port>9301</es.bind.port>
     </properties>
-
+    <repositories>
+        <repository>
+            <id>es-snapshots</id>
+            <name>elasticsearch snapshot repo</name>
+            <url>https://d3g5vo6xdbdb9a.cloudfront.net/tarball/</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.elasticsearch</groupId>
@@ -52,6 +60,12 @@
             <artifactId>jaxb-runtime</artifactId>
             <version>2.3.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.plugin</groupId>
+            <artifactId>transport-netty4-client</artifactId>
+            <version>${elasticsearch.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -76,9 +90,90 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <id>generate-plugin</id>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>attached</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <phase>pre-integration-test</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <tests.rest.cluster>localhost:9201</tests.rest.cluster>
+                        <es.http.port>${es.http.port}</es.http.port>
+                    </systemPropertyVariables>
+                    <excludes>
+                        <exclude>**/*StorageOptimizerPluginTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <includes>
+                        <include>**/*.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.alexcojocaru</groupId>
+                <artifactId>elasticsearch-maven-plugin</artifactId>
+                <version>6.19</version>
+                <configuration>
+                    <downloadUrl>https://artifacts.elastic.co/downloads/elasticsearch/%s</downloadUrl>
+                    <version>${elasticsearch.version}</version>
+                    <clusterName>elephant</clusterName>
+                    <transportPort>9301</transportPort>
+                    <httpPort>9201</httpPort>
+                    <instanceCount>1</instanceCount>
+                    <instanceSettings>
+                        <properties>
+                            <node.name>First</node.name>
+                            <node.attr.data_type>ingest</node.attr.data_type>
+                        </properties>
+                    </instanceSettings>
+                    <plugins>
+                        <plugin>
+                            <uri>file://${project.build.directory}/releases/storage-optimizer-plugin-1.0-SNAPSHOT.zip</uri>
+                        </plugin>
+                    </plugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>start-elasticsearch</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>runforked</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop-elasticsearch</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
                         </goals>
                     </execution>
                 </executions>
