@@ -10,7 +10,7 @@ bin/elasticsearch-plugin install file:////<Absolute Path>/elastic-storage-optimi
 ## Enable Optimization for index
 
 ```
-curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/_storage/_optimize" -d '{"index": "book", "fields": ["tag"]}' -v
+curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/_storage/_optimize" -d '{"index": "twitter", "fields": ["user"]}' -v
 ```
 
 ## Add Record

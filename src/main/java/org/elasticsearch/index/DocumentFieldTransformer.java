@@ -1,20 +1,20 @@
 package org.elasticsearch.index;
 
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.uid.cache.ObjectUIDCache;
+import org.elasticsearch.index.exception.FieldValueMissingException;
+import org.elasticsearch.uid.cache.ObjectValueToIntegerMapper;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class DocumentFieldTransformer {
     private final IndicesProvider indicesProvider;
-    private final ObjectUIDCache objectUIDCache;
+    private final ObjectValueToIntegerMapper objectValueToIntegerMapper;
 
-    public DocumentFieldTransformer(IndicesProvider indicesProvider, ObjectUIDCache objectUIDCache) {
+    public DocumentFieldTransformer(IndicesProvider indicesProvider, ObjectValueToIntegerMapper objectValueToIntegerMapper) {
         this.indicesProvider = indicesProvider;
-        this.objectUIDCache = objectUIDCache;
+        this.objectValueToIntegerMapper = objectValueToIntegerMapper;
     }
 
     public void transform(IndexRequest indexReq) {
@@ -25,18 +25,26 @@ public class DocumentFieldTransformer {
         }
     }
 
-    public Collection<String> interceptSearch(String index) {
+    public Optional<Integer> getValueOnDisk(String index, String fieldName, String value) {
         boolean intercept = indicesProvider.canOptimize(index);
         if (intercept) {
-            return indicesProvider.fieldsToOptimize(index);
+            Collection<String> fields = indicesProvider.fieldsToOptimize(index);
+            if (fields.contains(fieldName)) {
+                Optional<Integer> transformedValue = objectValueToIntegerMapper.transform(value);
+                transformedValue.or(() -> {
+                    String message = String.format("Index [%s] field [%s] value [%s] missing in cache", index, fieldName, value);
+                    throw new FieldValueMissingException(message);
+                });
+                return transformedValue;
+            }
         }
-        return Collections.emptyList();
+        return Optional.empty();
     }
 
     private void transformField(String field, IndexRequest indexReq, Map<String, Object> data) {
         Object value = data.remove(field);
         if (value != null) {
-            Object newValue = objectUIDCache.transform(field, value);
+            Object newValue = objectValueToIntegerMapper.transform(field, value.toString());
             data.put(field, newValue);
             indexReq.source(data);
         }
