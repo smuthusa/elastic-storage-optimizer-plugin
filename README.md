@@ -2,6 +2,16 @@
 
 This plugin will optimize storage space by doing a mapping for heavy objects to numeric type
 
+## Dependency
+```
+Java 11
+Maven 3.6.x
+```
+## Compile
+```
+mvn clean install
+```
+
 ## Install Plugin
 
 ```
@@ -10,16 +20,11 @@ bin/elasticsearch-plugin install file:////<Absolute Path>/elastic-storage-optimi
 ## Enable Optimization for index
 
 ```
-curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/_storage/_optimize" -d '{"index": "twitter", "fields": ["user"]}' -v
+curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/_storage/_optimize" -d '{"index": "stats", "fields": ["region"]}' -v
 ```
 
-## Add Record
+## Examples
 ```
-curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/book/index" -d "{\"timestamp\":1624885304,\"name\":\"Yoga for children\",\"Author\":\"Some author\",\"description\":\"for kids to learn yoga\",\"tag\":\"india\"}"
-```
-
-## Other examples
-```
-curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/twitter/_doc?routing=saravanan" -d "{\"user\":\"saravanan\",\"post_date\":\"2021-01-15T14:12:12\",\"message\":\"trying out Elasticsearch\"}"
-curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/twitter/_search?routing=saravanan" -d "{\"query\":{\"bool\":{\"must\":{\"query_string\":{\"query\":\"trying\"}},\"filter\":{\"term\":{\"user\":\"saravanan\"}}}}}"
+curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/stats/_doc" -d "{\"hostname\":\"madelephant\",\"post_date\":\"2021-01-15T14:12:12\",\"region\":\"London\"}"
+curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/stats/_search" -d "{\"query\":{\"bool\":{\"must\":\"filter\":{\"term\":{\"region\":\"London\"}}}}}"
 ```

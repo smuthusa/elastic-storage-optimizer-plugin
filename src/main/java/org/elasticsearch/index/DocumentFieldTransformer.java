@@ -33,7 +33,7 @@ public class DocumentFieldTransformer {
                 Optional<Integer> transformedValue = objectValueToIntegerMapper.transform(value);
                 transformedValue.or(() -> {
                     String message = String.format("Index [%s] field [%s] value [%s] missing in cache", index, fieldName, value);
-                    throw new FieldValueMissingException(message);
+                    throw new FieldValueMissingException(message); //TODO send proper response to the user
                 });
                 return transformedValue;
             }
